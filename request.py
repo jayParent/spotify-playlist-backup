@@ -1,4 +1,5 @@
 import requests
+import csv
 
 client_id = ''
 client_secret = ''
@@ -18,7 +19,7 @@ def getAuthorization():
 
 def getAccessAndRefreshToken():
     grant_type = 'authorization_code'
-    code = 'AQCLAnVXfOi--DMI_W48dCE9QplGDIJo1FqDFgx3TVoBlsRyWg0VkFZoZXTkpV-U2rbh-2pi-Gh7EpCpNqO1UxIhhXCqz0OVYGpwIRrlTI-XTX3k72GvRVkz92kh22C0akhfzumJ5571mkjUV3KU-Ur_-VJS8wc0uPIunSXcEToFVjGjZA78MALEV2_FrnWK'
+    code = ''
     token_url = 'https://accounts.spotify.com/api/token'
     headers = {'client_id': client_id, 'client_secret': client_secret,
                'grant_type': grant_type, 'code': code, 'redirect_uri': redirect_uri}
@@ -28,7 +29,7 @@ def getAccessAndRefreshToken():
 
 
 def getNewAccessToken():
-    refresh_token = 'AQAUHKJsR94MppfljIzISyR09VqH8E1WrRsrSJVXPmEIuz0ue-btIGqjadHAPGoYAKVj76krF62JyQTkcqeEbeeSuAoG4ZWRx6uvfJklx-t2r6cCKrjpHv-I3rXhkotXqu8'
+    refresh_token = ''
 
     refresh_url = 'https://accounts.spotify.com/api/token'
     headers = {'grant_type': 'refresh_token', 'refresh_token': refresh_token,
@@ -42,15 +43,23 @@ def getPlaylists():
     url = 'https://api.spotify.com/v1/me/playlists'
     access_token = getNewAccessToken()
     authorization = {'Authorization': 'Bearer ' + access_token}
+    trance_PlaylistId = '4NGcaASBaU1elQauvK65Z1'
 
-    # r = requests.get(url, headers=authorization)
-    # jsonResponse = r.json()
-    # print(jsonResponse)
-
-    url = 'https://api.spotify.com/v1/playlists/4NGcaASBaU1elQauvK65Z1/tracks'
+    url = 'https://api.spotify.com/v1/playlists/' + \
+        trance_PlaylistId + '/tracks?fields=items(track(name))'
     r = requests.get(url, headers=authorization)
-    print(r.text)
+    jsonResponse = r.json()
+
+    return jsonResponse
+
+def writeToCsv(trackList):
+    with open('trance_playlist.csv', mode='w') as csv_file:
+        writer = csv.writer(csv_file)
+
+        for track in trackList['items']:
+            writer.writerow([track['track']['name']])
+            print(track['track']['name'])
 
 
-# getNewAccessToken()
-getPlaylists()
+trackList = getPlaylists()
+writeToCsv(trackList)
